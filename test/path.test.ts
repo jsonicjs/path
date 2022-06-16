@@ -1,7 +1,14 @@
-/* Copyright (c) 2021-2022 Richard Rodger and other contributors, MIT License */
+/* Copyright (c) 2022 Richard Rodger and other contributors, MIT License */
 
 
 import { Jsonic, Rule } from '@jsonic/jsonic-next'
+import {
+  Expr,
+  Op,
+} from '@jsonic/expr'
+
+
+
 import { Path } from '../path'
 
 
@@ -356,6 +363,46 @@ describe('path', () => {
     })
 
   })
+
+
+  test('value', () => {
+    const j = Jsonic.make()
+      .use(Path)
+      .use((jsonic) => {
+        jsonic.options({
+          value: {
+            map: {
+              AAA: {
+                val: (r: Rule) => {
+                  return { AAA: 1, k: r.keep.key, p: r.keep.path }
+                }
+              }
+            }
+          }
+        })
+      })
+
+    expect(j('a:AAA')).toEqual({ a: { AAA: 1, k: 'a', p: ['a'] } })
+  })
+
+
+  test('expr', () => {
+    const j = Jsonic.make()
+      .use(Path)
+      .use(Expr, {
+        op: {
+          'foo': {
+            infix: true, src: '%', left: 14000, right: 15000
+          },
+        },
+        evaluate: (r: Rule, _op: Op, terms: any) => {
+          return { foo: terms[0] * terms[1], k: r.keep.key, p: r.keep.path }
+        }
+      })
+
+    expect(j('a:2%3')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } })
+  })
+
 })
 
 

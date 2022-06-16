@@ -1,7 +1,8 @@
 "use strict";
-/* Copyright (c) 2021-2022 Richard Rodger and other contributors, MIT License */
+/* Copyright (c) 2022 Richard Rodger and other contributors, MIT License */
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonic_next_1 = require("@jsonic/jsonic-next");
+const expr_1 = require("@jsonic/expr");
 const path_1 = require("../path");
 describe('path', () => {
     test('happy', () => {
@@ -325,6 +326,39 @@ describe('path', () => {
                 },
             }
         });
+    });
+    test('value', () => {
+        const j = jsonic_next_1.Jsonic.make()
+            .use(path_1.Path)
+            .use((jsonic) => {
+            jsonic.options({
+                value: {
+                    map: {
+                        AAA: {
+                            val: (r) => {
+                                return { AAA: 1, k: r.keep.key, p: r.keep.path };
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        expect(j('a:AAA')).toEqual({ a: { AAA: 1, k: 'a', p: ['a'] } });
+    });
+    test('expr', () => {
+        const j = jsonic_next_1.Jsonic.make()
+            .use(path_1.Path)
+            .use(expr_1.Expr, {
+            op: {
+                'foo': {
+                    infix: true, src: '%', left: 14000, right: 15000
+                },
+            },
+            evaluate: (r, _op, terms) => {
+                return { foo: terms[0] * terms[1], k: r.keep.key, p: r.keep.path };
+            }
+        });
+        expect(j('a:2%3')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } });
     });
 });
 //# sourceMappingURL=path.test.js.map
