@@ -1,12 +1,12 @@
 {
-  "name": "@jsonic/directive",
-  "version": "0.7.0",
-  "description": "This plugin allows the [Jsonic](https://jsonic.senecajs.org) JSON parser to support directive syntax.",
-  "main": "directive.js",
+  "name": "@jsonic/path",
+  "version": "0.1.0",
+  "description": "This plugin allows the [Jsonic](https://jsonic.senecajs.org) JSON parser to determine the path to values.",
+  "main": "path.js",
   "type": "commonjs",
-  "browser": "directive.min.js",
-  "types": "directive.d.ts",
-  "homepage": "https://github.com/jsonicjs/directive",
+  "browser": "path.min.js",
+  "types": "path.d.ts",
+  "homepage": "https://github.com/jsonicjs/path",
   "keywords": [
     "pattern",
     "matcher",
@@ -17,14 +17,14 @@
   "author": "Richard Rodger (http://richardrodger.com)",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jsonicjs/directive.git"
+    "url": "git://github.com/jsonicjs/path.git"
   },
   "scripts": {
     "test": "jest --coverage",
     "test-some": "jest -t",
     "test-watch": "jest --coverage --watchAll",
     "watch": "tsc -w -d",
-    "build": "tsc -d && cp directive.js directive.min.js && browserify -o directive.min.js -e directive.js -s @JsonicDirective -im -i assert -p tinyify",
+    "build": "tsc -d && cp path.js path.min.js && browserify -o path.min.js -e path.js -s @JsonicPath -im -i assert -p tinyify",
     "prettier": "prettier --write --no-semi --single-quote *.ts test/*.js",
     "clean": "rm -rf node_modules yarn.lock package-lock.json",
     "reset": "npm run clean && npm i && npm test",
@@ -40,16 +40,19 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "@types/jest": "^27.5.1",
+    "@types/jest": "^28.1.1",
     "browserify": "^17.0.0",
-    "esbuild": "^0.14.42",
+    "esbuild": "^0.14.44",
     "esbuild-jest": "^0.5.0",
-    "jest": "^28.1.0",
-    "@jsonic/jsonic-next": "2.0.2",
-    "prettier": "^2.6.2",
+    "jest": "^28.1.1",
+    "@jsonic/jsonic-next": "2.1.0",
+    "prettier": "^2.7.1",
     "tinyify": "^3.0.0",
-    "ts-jest": "^28.0.3",
-    "typescript": "^4.7.2"
+    "ts-jest": "^28.0.5",
+    "typescript": "^4.7.3"
+  },
+  "peerDependencies": {
+    "@jsonic/jsonic-next": ">=2"
   },
   "dependencies": {}
 }
