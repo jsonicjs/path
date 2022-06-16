@@ -24,6 +24,7 @@ const Path = (jsonic, _options) => {
             .ao(false, r => {
             if (0 < r.d && r.use.pair) {
                 r.child.keep.path = [...r.keep.path, r.use.key];
+                r.child.keep.key = r.use.key;
             }
         });
     });

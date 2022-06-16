@@ -108,5 +108,93 @@ describe('path', () => {
             }
         });
     });
+    // TODO
+    //   test('array', () => {
+    test('transform', () => {
+        const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+            jsonic.rule('val', rs => {
+                rs
+                    .ac(false, (r) => {
+                    if ('object' !== typeof (r.node)) {
+                        r.node = { o: false, v: r.node, p: r.keep.path, k: r.keep.key };
+                    }
+                    else {
+                        r.node = {
+                            o: true,
+                            v: { ...r.node },
+                            p: r.keep.path,
+                            k: r.keep.key
+                        };
+                    }
+                });
+            });
+        });
+        expect(j('{a:{b:1}}')).toEqual({
+            k: undefined,
+            o: true,
+            p: [],
+            v: {
+                a: {
+                    k: 'a',
+                    o: true,
+                    p: ['a',],
+                    v: {
+                        b: {
+                            k: 'b',
+                            o: false,
+                            p: ['a', 'b',],
+                            v: 1,
+                        },
+                    },
+                },
+            },
+        });
+        expect(j('{a:{b:1,c:{d:{e:2}}},f:4}')).toEqual({
+            k: undefined,
+            o: true,
+            p: [],
+            v: {
+                a: {
+                    k: 'a',
+                    o: true,
+                    p: ['a',],
+                    v: {
+                        b: {
+                            k: 'b',
+                            o: false,
+                            p: ['a', 'b',],
+                            v: 1,
+                        },
+                        c: {
+                            k: 'c',
+                            o: true,
+                            p: ['a', 'c'],
+                            v: {
+                                d: {
+                                    k: 'd',
+                                    o: true,
+                                    p: ['a', 'c', 'd'],
+                                    v: {
+                                        e: {
+                                            k: 'e',
+                                            o: false,
+                                            p: ['a', 'c', 'd', 'e'],
+                                            v: 2
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
+                f: {
+                    k: 'f',
+                    o: false,
+                    p: ['f',],
+                    v: 4,
+                },
+            },
+        });
+    });
 });
 //# sourceMappingURL=path.test.js.map
