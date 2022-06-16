@@ -126,8 +126,52 @@ describe('path', () => {
   })
 
 
-  // TODO
-  //   test('array', () => {
+  test('array', () => {
+    const j = Jsonic.make().use(Path).use((jsonic) => {
+      jsonic.rule('val', rs => {
+        rs
+          .ac(false, (r) => {
+            if ('object' !== typeof (r.node)) {
+              r.node = `<${r.node}:${r.keep.path}>`
+            }
+            else {
+              r.node = { ...r.node }
+              r.node.$ = `<${r.keep.path}>`
+            }
+          })
+      })
+    })
+
+    expect(j('[]')).toEqual({ $: '<>' })
+    expect(j('[1]')).toEqual({ $: '<>', 0: '<1:0>' })
+    expect(j('[1,2]')).toEqual({ $: '<>', 0: '<1:0>', 1: '<2:1>' })
+    expect(j('[1,2,3]')).toEqual({ $: '<>', 0: '<1:0>', 1: '<2:1>', 2: '<3:2>' })
+
+    expect(j('[[]]')).toEqual({ $: '<>', 0: { $: '<0>' } })
+    expect(j('[[1]]')).toEqual({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>' } })
+    expect(j('[[1,2]]'))
+      .toEqual({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>' } })
+    expect(j('[[1,2,3]]'))
+      .toEqual({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>', 2: '<3:0,2>' } })
+
+    expect(j('[[[]]]')).toEqual({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>' } } })
+    expect(j('[[[1]]]'))
+      .toEqual({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>' } } })
+    expect(j('[[[1,2]]]'))
+      .toEqual({
+        $: '<>',
+        0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>', 1: '<2:0,0,1>' } }
+      })
+    expect(j('[[[1,2,3]]]'))
+      .toEqual({
+        $: '<>',
+        0: {
+          $: '<0>',
+          0: { $: '<0,0>', 0: '<1:0,0,0>', 1: '<2:0,0,1>', 2: '<3:0,0,2>' }
+        }
+      })
+
+  })
 
 
   test('transform', () => {
@@ -136,14 +180,21 @@ describe('path', () => {
         rs
           .ac(false, (r) => {
             if ('object' !== typeof (r.node)) {
-              r.node = { o: false, v: r.node, p: r.keep.path, k: r.keep.key }
+              r.node = {
+                o: 'val',
+                v: r.node,
+                p: r.keep.path,
+                // k: null == r.keep.key ? r.keep.index : r.keep.key
+                k: r.keep.key,
+              }
             }
             else {
               r.node = {
-                o: true,
+                o: Array.isArray(r.node) ? 'arr' : 'obj',
                 v: { ...r.node },
                 p: r.keep.path,
-                k: r.keep.key
+                // k: null == r.keep.key ? r.keep.index : r.keep.key
+                k: r.keep.key,
               }
             }
           })
@@ -152,17 +203,17 @@ describe('path', () => {
 
     expect(j('{a:{b:1}}')).toEqual({
       k: undefined,
-      o: true,
+      o: 'obj',
       p: [],
       v: {
         a: {
           k: 'a',
-          o: true,
+          o: 'obj',
           p: ['a',],
           v: {
             b: {
               k: 'b',
-              o: false,
+              o: 'val',
               p: ['a', 'b',],
               v: 1,
             },
@@ -173,33 +224,33 @@ describe('path', () => {
 
     expect(j('{a:{b:1,c:{d:{e:2}}},f:4}')).toEqual({
       k: undefined,
-      o: true,
+      o: 'obj',
       p: [],
       v: {
         a: {
           k: 'a',
-          o: true,
+          o: 'obj',
           p: ['a',],
           v: {
             b: {
               k: 'b',
-              o: false,
+              o: 'val',
               p: ['a', 'b',],
               v: 1,
             },
             c: {
               k: 'c',
-              o: true,
+              o: 'obj',
               p: ['a', 'c'],
               v: {
                 d: {
                   k: 'd',
-                  o: true,
+                  o: 'obj',
                   p: ['a', 'c', 'd'],
                   v: {
                     e: {
                       k: 'e',
-                      o: false,
+                      o: 'val',
                       p: ['a', 'c', 'd', 'e'],
                       v: 2
                     }
@@ -211,16 +262,100 @@ describe('path', () => {
         },
         f: {
           k: 'f',
-          o: false,
+          o: 'val',
           p: ['f',],
           v: 4,
         },
       },
     })
 
+    expect(j('[a,b,c]')).toEqual({
+      k: undefined,
+      o: 'arr',
+      p: [],
+      v: {
+        0: {
+          k: 0,
+          o: 'val',
+          p: [0],
+          v: 'a',
+        },
+        1: {
+          k: 1,
+          o: 'val',
+          p: [1],
+          v: 'b',
+        },
+        2: {
+          k: 2,
+          o: 'val',
+          p: [2],
+          v: 'c',
+        },
+      }
+    })
+
+    expect(j('[a,[b],{c:1,d:[2,3]}]')).toEqual({
+      k: undefined,
+      o: 'arr',
+      p: [],
+      v: {
+        0: {
+          k: 0,
+          o: 'val',
+          p: [0],
+          v: 'a',
+        },
+        1: {
+          k: 1,
+          o: 'arr',
+          p: [1],
+          v: {
+            0: {
+              k: 0,
+              o: 'val',
+              p: [1, 0],
+              v: 'b',
+            }
+          }
+        },
+        2: {
+          k: 2,
+          o: 'obj',
+          p: [2],
+          v: {
+            c: {
+              k: 'c',
+              o: 'val',
+              p: [2, 'c'],
+              v: 1,
+
+            },
+            d: {
+              k: 'd',
+              o: 'arr',
+              p: [2, 'd'],
+              v: {
+                0: {
+                  k: 0,
+                  o: 'val',
+                  p: [2, 'd', 0],
+                  v: 2,
+                },
+                1: {
+                  k: 1,
+                  o: 'val',
+                  p: [2, 'd', 1],
+                  v: 3,
+                },
+              }
+            },
+          }
+        },
+      }
+    })
 
   })
-
 })
 
 

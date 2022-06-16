@@ -23,7 +23,8 @@ const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
   jsonic
     .rule('map', rs => {
       rs
-        .bo(r => { r.keep.index = -1 })
+        // .bo(r => { r.keep.index = -1 })
+        .bo(r => { delete r.keep.index })
     })
 
   jsonic
@@ -50,6 +51,8 @@ const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
           if (0 < r.d) {
             r.keep.index = 1 + r.keep.index
             r.child.keep.path = [...r.keep.path, r.keep.index]
+            r.child.keep.key = r.keep.index
+            r.child.keep.index = r.keep.index
           }
         })
     })

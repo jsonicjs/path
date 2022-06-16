@@ -16,7 +16,8 @@ const Path = (jsonic, _options) => {
     jsonic
         .rule('map', rs => {
         rs
-            .bo(r => { r.keep.index = -1; });
+            // .bo(r => { r.keep.index = -1 })
+            .bo(r => { delete r.keep.index; });
     });
     jsonic
         .rule('pair', rs => {
@@ -40,6 +41,8 @@ const Path = (jsonic, _options) => {
             if (0 < r.d) {
                 r.keep.index = 1 + r.keep.index;
                 r.child.keep.path = [...r.keep.path, r.keep.index];
+                r.child.keep.key = r.keep.index;
+                r.child.keep.index = r.keep.index;
             }
         });
     });
