@@ -6,7 +6,7 @@ type PathOptions = {}
 
 const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
   jsonic.rule('val', (rs) => {
-    rs.bo(false, (r) => {
+    rs.bo((r) => {
       if (0 === r.d) {
         r.keep.path = []
       }
@@ -23,7 +23,7 @@ const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
   })
 
   jsonic.rule('pair', (rs) => {
-    rs.ao(false, (r) => {
+    rs.ao((r) => {
       if (0 < r.d && r.use.pair) {
         r.child.keep.path = [...r.keep.path, r.use.key]
         r.child.keep.key = r.use.key
@@ -38,7 +38,7 @@ const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
   })
 
   jsonic.rule('elem', (rs) => {
-    rs.ao(false, (r) => {
+    rs.ao((r) => {
       if (0 < r.d) {
         r.keep.index = 1 + r.keep.index
         r.child.keep.path = [...r.keep.path, r.keep.index]
