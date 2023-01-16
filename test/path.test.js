@@ -333,7 +333,7 @@ describe('path', () => {
             .use((jsonic) => {
             jsonic.options({
                 value: {
-                    map: {
+                    def: {
                         AAA: {
                             val: (r) => {
                                 return { AAA: 1, k: r.keep.key, p: r.keep.path };
