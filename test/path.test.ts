@@ -28,10 +28,10 @@ describe('path', () => {
         rs
           .ac(false, (r) => {
             if ('object' !== typeof (r.node)) {
-              r.node = `<${r.node}:${r.keep.path}>`
+              r.node = `<${r.node}:${r.k.path}>`
             }
             else {
-              r.node.$ = `<${r.keep.path}>`
+              r.node.$ = `<${r.k.path}>`
             }
           })
       })
@@ -59,10 +59,10 @@ describe('path', () => {
         rs
           .ac(false, (r) => {
             if ('object' !== typeof (r.node)) {
-              r.node = `<${r.node}:${r.keep.path}>`
+              r.node = `<${r.node}:${r.k.path}>`
             }
             else {
-              r.node.$ = `<${r.keep.path}>`
+              r.node.$ = `<${r.k.path}>`
             }
           })
       })
@@ -139,11 +139,11 @@ describe('path', () => {
         rs
           .ac(false, (r) => {
             if ('object' !== typeof (r.node)) {
-              r.node = `<${r.node}:${r.keep.path}>`
+              r.node = `<${r.node}:${r.k.path}>`
             }
             else {
               r.node = { ...r.node }
-              r.node.$ = `<${r.keep.path}>`
+              r.node.$ = `<${r.k.path}>`
             }
           })
       })
@@ -190,18 +190,18 @@ describe('path', () => {
               r.node = {
                 o: 'val',
                 v: r.node,
-                p: r.keep.path,
-                // k: null == r.keep.key ? r.keep.index : r.keep.key
-                k: r.keep.key,
+                p: r.k.path,
+                // k: null == r.k.key ? r.k.index : r.k.key
+                k: r.k.key,
               }
             }
             else {
               r.node = {
                 o: Array.isArray(r.node) ? 'arr' : 'obj',
                 v: { ...r.node },
-                p: r.keep.path,
-                // k: null == r.keep.key ? r.keep.index : r.keep.key
-                k: r.keep.key,
+                p: r.k.path,
+                // k: null == r.k.key ? r.k.index : r.k.key
+                k: r.k.key,
               }
             }
           })
@@ -374,7 +374,7 @@ describe('path', () => {
             def: {
               AAA: {
                 val: (r: Rule) => {
-                  return { AAA: 1, k: r.keep.key, p: r.keep.path }
+                  return { AAA: 1, k: r.k.key, p: r.k.path }
                 }
               }
             }
@@ -396,7 +396,7 @@ describe('path', () => {
           },
         },
         evaluate: (r: Rule, _op: Op, terms: any) => {
-          return { foo: terms[0] * terms[1], k: r.keep.key, p: r.keep.path }
+          return { foo: terms[0] * terms[1], k: r.k.key, p: r.k.path }
         }
       })
 
