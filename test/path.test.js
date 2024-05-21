@@ -37,6 +37,32 @@ describe('path', () => {
             }
         });
     });
+    test('meta', () => {
+        const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+            jsonic.rule('val', rs => {
+                rs
+                    .ac(false, (r) => {
+                    if ('object' === typeof (r.node)) {
+                        r.node.$ = `<${r.k.path}>`;
+                    }
+                });
+            });
+        });
+        expect(j('a:b:c:1,d:e:2', { path: { base: ['x', 'y'] } })).toEqual({
+            $: '<x,y>',
+            a: {
+                $: '<x,y,a>',
+                b: {
+                    $: '<x,y,a,b>',
+                    c: 1
+                }
+            },
+            d: {
+                $: '<x,y,d>',
+                e: 2
+            }
+        });
+    });
     test('object', () => {
         const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
             jsonic.rule('val', rs => {

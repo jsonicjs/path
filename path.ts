@@ -6,9 +6,9 @@ type PathOptions = {}
 
 const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
   jsonic.rule('val', (rs) => {
-    rs.bo((r) => {
+    rs.bo((r, ctx) => {
       if (0 === r.d) {
-        r.k.path = []
+        r.k.path = ctx.meta.path?.base?.slice(0) || []
       }
     })
   })
