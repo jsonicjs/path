@@ -1,25 +1,29 @@
-/* Copyright (c) 2022 Richard Rodger, MIT License */
+/* Copyright (c) 2022-2024 Richard Rodger, MIT License */
 
 import { Jsonic, Plugin } from '@jsonic/jsonic-next'
 
 type PathOptions = {}
 
+/* Keeps track of the property path to the current location.
+ * Example: {a:{b:1 ## path=["a","b"]
+ * Use the Rule.k key-value store so that the path is propagated to children and followers.
+ * Depth must be greater than 0 - ensures path only starts once top level implicit is set up.
+ */
 const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
   jsonic.rule('val', (rs) => {
     rs.bo((r, ctx) => {
+      // At top level, create path array, or inherit from meta context.
       if (0 === r.d) {
         r.k.path = ctx.meta.path?.base?.slice(0) || []
       }
     })
   })
 
-  // TODO: fix type chaining with jsonic.rule
   jsonic.rule('map', (rs) => {
-    rs
-      // .bo(r => { r.k.index = -1 })
-      .bo((r) => {
-        delete r.k.index
-      })
+    rs.bo((r) => {
+      // Not in an array, so no need to track element index.
+      delete r.k.index
+    })
   })
 
   jsonic.rule('pair', (rs) => {
@@ -33,6 +37,7 @@ const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
 
   jsonic.rule('list', (rs) => {
     rs.bo((r) => {
+      // In array, the path property is the element index.
       r.k.index = -1
     })
   })
