@@ -1,10 +1,9 @@
 {
   "name": "@jsonic/path",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "This plugin allows the [Jsonic](https://jsonic.senecajs.org) JSON parser to determine the path to values.",
   "main": "path.js",
   "type": "commonjs",
-  "browser": "path.min.js",
   "types": "path.d.ts",
   "homepage": "https://github.com/jsonicjs/path",
   "keywords": [
@@ -52,6 +51,6 @@
     "@jsonic/expr": ">=0.9.0"
   },
   "peerDependencies": {
-    "jsonic": ">=2.15.1"
+    "jsonic": ">=2.15.2"
   }
 }
