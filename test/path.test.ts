@@ -1,7 +1,7 @@
-/* Copyright (c) 2022 Richard Rodger and other contributors, MIT License */
+/* Copyright (c) 2022-2024 Richard Rodger and other contributors, MIT License */
 
 
-import { Jsonic, Rule } from '@jsonic/jsonic-next'
+import { Jsonic, Rule } from 'jsonic'
 import {
   Expr,
   Op,

@@ -1,16 +1,16 @@
 "use strict";
-/* Copyright (c) 2022 Richard Rodger and other contributors, MIT License */
+/* Copyright (c) 2022-2024 Richard Rodger and other contributors, MIT License */
 Object.defineProperty(exports, "__esModule", { value: true });
-const jsonic_next_1 = require("@jsonic/jsonic-next");
+const jsonic_1 = require("jsonic");
 const expr_1 = require("@jsonic/expr");
 const path_1 = require("../path");
 describe('path', () => {
     test('happy', () => {
-        const j = jsonic_next_1.Jsonic.make().use(path_1.Path);
+        const j = jsonic_1.Jsonic.make().use(path_1.Path);
         expect(j('{a:{b:1,c:[2,3]}}')).toEqual({ a: { b: 1, c: [2, 3] } });
     });
     test('basic', () => {
-        const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+        const j = jsonic_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
             jsonic.rule('val', rs => {
                 rs
                     .ac(false, (r) => {
@@ -38,7 +38,7 @@ describe('path', () => {
         });
     });
     test('meta', () => {
-        const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+        const j = jsonic_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
             jsonic.rule('val', rs => {
                 rs
                     .ac(false, (r) => {
@@ -64,7 +64,7 @@ describe('path', () => {
         });
     });
     test('object', () => {
-        const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+        const j = jsonic_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
             jsonic.rule('val', rs => {
                 rs
                     .ac(false, (r) => {
@@ -136,7 +136,7 @@ describe('path', () => {
         });
     });
     test('array', () => {
-        const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+        const j = jsonic_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
             jsonic.rule('val', rs => {
                 rs
                     .ac(false, (r) => {
@@ -178,7 +178,7 @@ describe('path', () => {
         });
     });
     test('transform', () => {
-        const j = jsonic_next_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+        const j = jsonic_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
             jsonic.rule('val', rs => {
                 rs
                     .ac(false, (r) => {
@@ -354,7 +354,7 @@ describe('path', () => {
         });
     });
     test('value', () => {
-        const j = jsonic_next_1.Jsonic.make()
+        const j = jsonic_1.Jsonic.make()
             .use(path_1.Path)
             .use((jsonic) => {
             jsonic.options({
@@ -372,7 +372,7 @@ describe('path', () => {
         expect(j('a:AAA')).toEqual({ a: { AAA: 1, k: 'a', p: ['a'] } });
     });
     test('expr', () => {
-        const j = jsonic_next_1.Jsonic.make()
+        const j = jsonic_1.Jsonic.make()
             .use(path_1.Path)
             .use(expr_1.Expr, {
             op: {

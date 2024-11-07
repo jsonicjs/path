@@ -1,5 +1,5 @@
-const { Jsonic } = require('@jsonic/jsonic-next')
-const { Debug } = require('@jsonic/jsonic-next/debug')
+const { Jsonic } = require('jsonic')
+const { Debug } = require('jsonic/debug')
 
 console.log(Jsonic)
 console.log(Debug)
