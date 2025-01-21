@@ -1,7 +1,7 @@
-/* Copyright (c) 2022-2024 Richard Rodger and other contributors, MIT License */
+/* Copyright (c) 2022-2025 Richard Rodger and other contributors, MIT License */
 
 
-import { Jsonic, Rule } from 'jsonic'
+import { Jsonic, Rule, Context } from 'jsonic'
 import {
   Expr,
   Op,
@@ -425,11 +425,13 @@ describe('path', () => {
             infix: true, src: '%', left: 14000, right: 15000
           },
         },
-        evaluate: (r: Rule, _op: Op, terms: any) => {
+        evaluate: (r: Rule, _c: Context, _op: Op, terms: any) => {
+          // console.log('TERMS', terms)
           return { foo: terms[0] * terms[1], k: r.k.key, p: r.k.path }
         }
       })
 
+    expect(j('{a:2%3}')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } })
     expect(j('a:2%3')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } })
   })
 

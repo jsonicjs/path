@@ -1,5 +1,5 @@
 "use strict";
-/* Copyright (c) 2022-2024 Richard Rodger and other contributors, MIT License */
+/* Copyright (c) 2022-2025 Richard Rodger and other contributors, MIT License */
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonic_1 = require("jsonic");
 const expr_1 = require("@jsonic/expr");
@@ -380,10 +380,12 @@ describe('path', () => {
                     infix: true, src: '%', left: 14000, right: 15000
                 },
             },
-            evaluate: (r, _op, terms) => {
+            evaluate: (r, _c, _op, terms) => {
+                // console.log('TERMS', terms)
                 return { foo: terms[0] * terms[1], k: r.k.key, p: r.k.path };
             }
         });
+        expect(j('{a:2%3}')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } });
         expect(j('a:2%3')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } });
     });
 });
