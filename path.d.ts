@@ -1,4 +1,4 @@
-import { Plugin } from '@jsonic/jsonic-next';
+import { Plugin } from 'jsonic';
 type PathOptions = {};
 declare const Path: Plugin;
 export { Path };

@@ -1,6 +1,6 @@
 /* Copyright (c) 2022-2024 Richard Rodger, MIT License */
 
-import { Jsonic, Plugin } from '@jsonic/jsonic-next'
+import { Jsonic, Plugin } from 'jsonic'
 
 type PathOptions = {}
 
