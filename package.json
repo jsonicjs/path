@@ -40,8 +40,8 @@
     "@hapi/code": "^9.0.3",
     "@jsonic/doc": "^0.0.9",
     "@jsonic/expr": ">=1",
-    "@types/node": "^22.13.10",
-    "typescript": "^5.8.2"
+    "@types/node": "^25.5.0",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "jsonic": ">=2"
