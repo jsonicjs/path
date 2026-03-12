@@ -1,6 +1,9 @@
 /* Copyright (c) 2022-2025 Richard Rodger and other contributors, MIT License */
 
 
+import { test, describe } from 'node:test'
+import { expect } from '@hapi/code'
+
 import { Jsonic, Rule, Context } from 'jsonic'
 import {
   Expr,
@@ -9,7 +12,7 @@ import {
 
 
 
-import { Path } from '../path'
+import { Path } from '../dist/path'
 
 
 
@@ -18,7 +21,7 @@ describe('path', () => {
 
   test('happy', () => {
     const j = Jsonic.make().use(Path)
-    expect(j('{a:{b:1,c:[2,3]}}')).toEqual({ a: { b: 1, c: [2, 3] } })
+    expect(j('{a:{b:1,c:[2,3]}}')).to.equal({ a: { b: 1, c: [2, 3] } })
   })
 
 
@@ -42,7 +45,7 @@ describe('path', () => {
       '<3:a,c,1>',
     ]
     c.$ = '<a,c>'
-    expect(j('{a:{b:1,c:[2,3]}}')).toEqual({
+    expect(j('{a:{b:1,c:[2,3]}}')).to.equal({
       $: '<>',
       a: {
         $: '<a>',
@@ -65,7 +68,7 @@ describe('path', () => {
       })
     })
 
-    expect(j('a:b:c:1,d:e:2', { path: { base: ['x', 'y'] } })).toEqual({
+    expect(j('a:b:c:1,d:e:2', { path: { base: ['x', 'y'] } })).to.equal({
       $: '<x,y>',
       a: {
         $: '<x,y,a>',
@@ -98,34 +101,34 @@ describe('path', () => {
       })
     })
 
-    expect(j('a:1')).toEqual({ $: '<>', a: '<1:a>' })
-    expect(j('a:1,b:B')).toEqual({ $: '<>', a: '<1:a>', b: '<B:b>' })
+    expect(j('a:1')).to.equal({ $: '<>', a: '<1:a>' })
+    expect(j('a:1,b:B')).to.equal({ $: '<>', a: '<1:a>', b: '<B:b>' })
     expect(j('a:1,b:B,c:true'))
-      .toEqual({ $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' })
+      .to.equal({ $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' })
 
-    expect(j('{a:1}')).toEqual({ $: '<>', a: '<1:a>' })
-    expect(j('{a:1,b:B}')).toEqual({ $: '<>', a: '<1:a>', b: '<B:b>' })
+    expect(j('{a:1}')).to.equal({ $: '<>', a: '<1:a>' })
+    expect(j('{a:1,b:B}')).to.equal({ $: '<>', a: '<1:a>', b: '<B:b>' })
     expect(j('{a:1,b:B,c:true}'))
-      .toEqual({ $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' })
+      .to.equal({ $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' })
 
-    expect(j('x:{a:1}')).toEqual({ $: '<>', x: { $: '<x>', a: '<1:x,a>' } })
+    expect(j('x:{a:1}')).to.equal({ $: '<>', x: { $: '<x>', a: '<1:x,a>' } })
     expect(j('x:{a:1,b:B}'))
-      .toEqual({ $: '<>', x: { $: '<x>', a: '<1:x,a>', b: '<B:x,b>' } })
+      .to.equal({ $: '<>', x: { $: '<x>', a: '<1:x,a>', b: '<B:x,b>' } })
     expect(j('x:{a:1,b:B,c:true}'))
-      .toEqual({
+      .to.equal({
         $: '<>',
         x: { $: '<x>', a: '<1:x,a>', b: '<B:x,b>', c: '<true:x,c>' }
       })
 
     expect(j('y:x:{a:1}'))
-      .toEqual({ $: '<>', y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>' } } })
+      .to.equal({ $: '<>', y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>' } } })
     expect(j('y:x:{a:1,b:B}'))
-      .toEqual({
+      .to.equal({
         $: '<>',
         y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>', b: '<B:y,x,b>' } }
       })
     expect(j('y:x:{a:1,b:B,c:true}'))
-      .toEqual({
+      .to.equal({
         $: '<>', y: {
           $: '<y>',
           x: { $: '<y,x>', a: '<1:y,x,a>', b: '<B:y,x,b>', c: '<true:y,x,c>' }
@@ -133,12 +136,12 @@ describe('path', () => {
       })
 
     expect(j('z:y:x:{a:1}'))
-      .toEqual({
+      .to.equal({
         $: '<>',
         z: { $: '<z>', y: { $: '<z,y>', x: { $: '<z,y,x>', a: '<1:z,y,x,a>' } } }
       })
     expect(j('z:y:x:{a:1,b:B}'))
-      .toEqual({
+      .to.equal({
         $: '<>',
         z: {
           $: '<z>',
@@ -146,7 +149,7 @@ describe('path', () => {
         }
       })
     expect(j('z:y:x:{a:1,b:B,c:true}'))
-      .toEqual({
+      .to.equal({
         $: '<>',
         z: {
           $: '<z>',
@@ -179,28 +182,28 @@ describe('path', () => {
       })
     })
 
-    expect(j('[]')).toEqual({ $: '<>' })
-    expect(j('[1]')).toEqual({ $: '<>', 0: '<1:0>' })
-    expect(j('[1,2]')).toEqual({ $: '<>', 0: '<1:0>', 1: '<2:1>' })
-    expect(j('[1,2,3]')).toEqual({ $: '<>', 0: '<1:0>', 1: '<2:1>', 2: '<3:2>' })
+    expect(j('[]')).to.equal({ $: '<>' })
+    expect(j('[1]')).to.equal({ $: '<>', 0: '<1:0>' })
+    expect(j('[1,2]')).to.equal({ $: '<>', 0: '<1:0>', 1: '<2:1>' })
+    expect(j('[1,2,3]')).to.equal({ $: '<>', 0: '<1:0>', 1: '<2:1>', 2: '<3:2>' })
 
-    expect(j('[[]]')).toEqual({ $: '<>', 0: { $: '<0>' } })
-    expect(j('[[1]]')).toEqual({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>' } })
+    expect(j('[[]]')).to.equal({ $: '<>', 0: { $: '<0>' } })
+    expect(j('[[1]]')).to.equal({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>' } })
     expect(j('[[1,2]]'))
-      .toEqual({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>' } })
+      .to.equal({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>' } })
     expect(j('[[1,2,3]]'))
-      .toEqual({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>', 2: '<3:0,2>' } })
+      .to.equal({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>', 2: '<3:0,2>' } })
 
-    expect(j('[[[]]]')).toEqual({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>' } } })
+    expect(j('[[[]]]')).to.equal({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>' } } })
     expect(j('[[[1]]]'))
-      .toEqual({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>' } } })
+      .to.equal({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>' } } })
     expect(j('[[[1,2]]]'))
-      .toEqual({
+      .to.equal({
         $: '<>',
         0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>', 1: '<2:0,0,1>' } }
       })
     expect(j('[[[1,2,3]]]'))
-      .toEqual({
+      .to.equal({
         $: '<>',
         0: {
           $: '<0>',
@@ -221,7 +224,6 @@ describe('path', () => {
                 o: 'val',
                 v: r.node,
                 p: r.k.path,
-                // k: null == r.k.key ? r.k.index : r.k.key
                 k: r.k.key,
               }
             }
@@ -230,7 +232,6 @@ describe('path', () => {
                 o: Array.isArray(r.node) ? 'arr' : 'obj',
                 v: { ...r.node },
                 p: r.k.path,
-                // k: null == r.k.key ? r.k.index : r.k.key
                 k: r.k.key,
               }
             }
@@ -238,7 +239,7 @@ describe('path', () => {
       })
     })
 
-    expect(j('{a:{b:1}}')).toEqual({
+    expect(j('{a:{b:1}}')).to.equal({
       k: undefined,
       o: 'obj',
       p: [],
@@ -259,7 +260,7 @@ describe('path', () => {
       },
     })
 
-    expect(j('{a:{b:1,c:{d:{e:2}}},f:4}')).toEqual({
+    expect(j('{a:{b:1,c:{d:{e:2}}},f:4}')).to.equal({
       k: undefined,
       o: 'obj',
       p: [],
@@ -306,7 +307,7 @@ describe('path', () => {
       },
     })
 
-    expect(j('[a,b,c]')).toEqual({
+    expect(j('[a,b,c]')).to.equal({
       k: undefined,
       o: 'arr',
       p: [],
@@ -332,7 +333,7 @@ describe('path', () => {
       }
     })
 
-    expect(j('[a,[b],{c:1,d:[2,3]}]')).toEqual({
+    expect(j('[a,[b],{c:1,d:[2,3]}]')).to.equal({
       k: undefined,
       o: 'arr',
       p: [],
@@ -412,7 +413,7 @@ describe('path', () => {
         })
       })
 
-    expect(j('a:AAA')).toEqual({ a: { AAA: 1, k: 'a', p: ['a'] } })
+    expect(j('a:AAA')).to.equal({ a: { AAA: 1, k: 'a', p: ['a'] } })
   })
 
 
@@ -426,15 +427,12 @@ describe('path', () => {
           },
         },
         evaluate: (r: Rule, _c: Context, _op: Op, terms: any) => {
-          // console.log('TERMS', terms)
           return { foo: terms[0] * terms[1], k: r.k.key, p: r.k.path }
         }
       })
 
-    expect(j('{a:2%3}')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } })
-    expect(j('a:2%3')).toEqual({ a: { foo: 6, k: 'a', p: ['a'] } })
+    expect(j('{a:2%3}')).to.equal({ a: { foo: 6, k: 'a', p: ['a'] } })
+    expect(j('a:2%3')).to.equal({ a: { foo: 6, k: 'a', p: ['a'] } })
   })
 
 })
-
-
