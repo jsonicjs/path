@@ -11,7 +11,7 @@ type PathOptions struct{}
 // Path is a Jsonic plugin that tracks the property path to the current
 // location during parsing. The path is stored in Rule.K["path"] as a
 // []any slice of string keys and int indices.
-func Path(j *jsonic.Jsonic, opts map[string]any) {
+func Path(j *jsonic.Jsonic, opts map[string]any) error {
 
 	j.Rule("val", func(rs *jsonic.RuleSpec) {
 		rs.BO = append(rs.BO, func(r *jsonic.Rule, ctx *jsonic.Context) {
@@ -77,6 +77,8 @@ func Path(j *jsonic.Jsonic, opts map[string]any) {
 			}
 		})
 	})
+
+	return nil
 }
 
 // MakeJsonic creates a Jsonic parser instance with the Path plugin.
