@@ -1,10 +1,12 @@
-/* Copyright (c) 2022-2025 Richard Rodger and other contributors, MIT License */
+/* Copyright (c) 2022-2026 Richard Rodger and other contributors, MIT License */
 
 package path
 
 import (
 	jsonic "github.com/jsonicjs/jsonic/go"
 )
+
+const Version = "0.0.0"
 
 type PathOptions struct{}
 

@@ -1,15 +1,55 @@
 "use strict";
 /* Copyright (c) 2022-2025 Richard Rodger and other contributors, MIT License */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_test_1 = require("node:test");
-const code_1 = require("@hapi/code");
+const node_assert_1 = __importDefault(require("node:assert"));
 const jsonic_1 = require("jsonic");
-const expr_1 = require("@jsonic/expr");
 const path_1 = require("../dist/path");
+// A very simple grammar for addition and multiplication of integer
+// expressions. No parens, but precedence: `*` binds tighter than `+`.
+// Expressions are lexed as a single value token and evaluated on the
+// `val` rule close so that the Path plugin's key/path are available.
+const EXPR_MARK = Symbol('expr');
+const evalExpr = (src) => src.split('+')
+    .map(term => term.split('*').reduce((a, b) => a * parseInt(b, 10), 1))
+    .reduce((a, b) => a + b, 0);
+const ExprLite = (jsonic) => {
+    jsonic.options({
+        lex: {
+            match: {
+                exprLite: {
+                    order: 6.5e6,
+                    make: () => (lex) => {
+                        const pnt = lex.pnt;
+                        const fwd = lex.src.substring(pnt.sI);
+                        const m = fwd.match(/^\d+(?:[+*]\d+)+/);
+                        if (!m)
+                            return undefined;
+                        const src = m[0];
+                        const tkn = lex.token('#VL', { [EXPR_MARK]: true, src }, src, pnt);
+                        pnt.sI += src.length;
+                        pnt.cI += src.length;
+                        return tkn;
+                    },
+                },
+            },
+        },
+    });
+    jsonic.rule('val', rs => {
+        rs.ac(false, (r) => {
+            if (r.node && typeof r.node === 'object' && r.node[EXPR_MARK]) {
+                r.node = { expr: evalExpr(r.node.src), k: r.k.key, p: r.k.path };
+            }
+        });
+    });
+};
 (0, node_test_1.describe)('path', () => {
     (0, node_test_1.test)('happy', () => {
         const j = jsonic_1.Jsonic.make().use(path_1.Path);
-        (0, code_1.expect)(j('{a:{b:1,c:[2,3]}}')).to.equal({ a: { b: 1, c: [2, 3] } });
+        node_assert_1.default.deepEqual(j('{a:{b:1,c:[2,3]}}'), { a: { b: 1, c: [2, 3] } });
     });
     (0, node_test_1.test)('basic', () => {
         const j = jsonic_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
@@ -30,7 +70,7 @@ const path_1 = require("../dist/path");
             '<3:a,c,1>',
         ];
         c.$ = '<a,c>';
-        (0, code_1.expect)(j('{a:{b:1,c:[2,3]}}')).to.equal({
+        node_assert_1.default.deepEqual(j('{a:{b:1,c:[2,3]}}'), {
             $: '<>',
             a: {
                 $: '<a>',
@@ -50,7 +90,7 @@ const path_1 = require("../dist/path");
                 });
             });
         });
-        (0, code_1.expect)(j('a:b:c:1,d:e:2', { path: { base: ['x', 'y'] } })).to.equal({
+        node_assert_1.default.deepEqual(j('a:b:c:1,d:e:2', { path: { base: ['x', 'y'] } }), {
             $: '<x,y>',
             a: {
                 $: '<x,y,a>',
@@ -79,51 +119,41 @@ const path_1 = require("../dist/path");
                 });
             });
         });
-        (0, code_1.expect)(j('a:1')).to.equal({ $: '<>', a: '<1:a>' });
-        (0, code_1.expect)(j('a:1,b:B')).to.equal({ $: '<>', a: '<1:a>', b: '<B:b>' });
-        (0, code_1.expect)(j('a:1,b:B,c:true'))
-            .to.equal({ $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' });
-        (0, code_1.expect)(j('{a:1}')).to.equal({ $: '<>', a: '<1:a>' });
-        (0, code_1.expect)(j('{a:1,b:B}')).to.equal({ $: '<>', a: '<1:a>', b: '<B:b>' });
-        (0, code_1.expect)(j('{a:1,b:B,c:true}'))
-            .to.equal({ $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' });
-        (0, code_1.expect)(j('x:{a:1}')).to.equal({ $: '<>', x: { $: '<x>', a: '<1:x,a>' } });
-        (0, code_1.expect)(j('x:{a:1,b:B}'))
-            .to.equal({ $: '<>', x: { $: '<x>', a: '<1:x,a>', b: '<B:x,b>' } });
-        (0, code_1.expect)(j('x:{a:1,b:B,c:true}'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('a:1'), { $: '<>', a: '<1:a>' });
+        node_assert_1.default.deepEqual(j('a:1,b:B'), { $: '<>', a: '<1:a>', b: '<B:b>' });
+        node_assert_1.default.deepEqual(j('a:1,b:B,c:true'), { $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' });
+        node_assert_1.default.deepEqual(j('{a:1}'), { $: '<>', a: '<1:a>' });
+        node_assert_1.default.deepEqual(j('{a:1,b:B}'), { $: '<>', a: '<1:a>', b: '<B:b>' });
+        node_assert_1.default.deepEqual(j('{a:1,b:B,c:true}'), { $: '<>', a: '<1:a>', b: '<B:b>', c: '<true:c>' });
+        node_assert_1.default.deepEqual(j('x:{a:1}'), { $: '<>', x: { $: '<x>', a: '<1:x,a>' } });
+        node_assert_1.default.deepEqual(j('x:{a:1,b:B}'), { $: '<>', x: { $: '<x>', a: '<1:x,a>', b: '<B:x,b>' } });
+        node_assert_1.default.deepEqual(j('x:{a:1,b:B,c:true}'), {
             $: '<>',
             x: { $: '<x>', a: '<1:x,a>', b: '<B:x,b>', c: '<true:x,c>' }
         });
-        (0, code_1.expect)(j('y:x:{a:1}'))
-            .to.equal({ $: '<>', y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>' } } });
-        (0, code_1.expect)(j('y:x:{a:1,b:B}'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('y:x:{a:1}'), { $: '<>', y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>' } } });
+        node_assert_1.default.deepEqual(j('y:x:{a:1,b:B}'), {
             $: '<>',
             y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>', b: '<B:y,x,b>' } }
         });
-        (0, code_1.expect)(j('y:x:{a:1,b:B,c:true}'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('y:x:{a:1,b:B,c:true}'), {
             $: '<>', y: {
                 $: '<y>',
                 x: { $: '<y,x>', a: '<1:y,x,a>', b: '<B:y,x,b>', c: '<true:y,x,c>' }
             }
         });
-        (0, code_1.expect)(j('z:y:x:{a:1}'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('z:y:x:{a:1}'), {
             $: '<>',
             z: { $: '<z>', y: { $: '<z,y>', x: { $: '<z,y,x>', a: '<1:z,y,x,a>' } } }
         });
-        (0, code_1.expect)(j('z:y:x:{a:1,b:B}'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('z:y:x:{a:1,b:B}'), {
             $: '<>',
             z: {
                 $: '<z>',
                 y: { $: '<z,y>', x: { $: '<z,y,x>', a: '<1:z,y,x,a>', b: '<B:z,y,x,b>' } }
             }
         });
-        (0, code_1.expect)(j('z:y:x:{a:1,b:B,c:true}'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('z:y:x:{a:1,b:B,c:true}'), {
             $: '<>',
             z: {
                 $: '<z>',
@@ -152,26 +182,21 @@ const path_1 = require("../dist/path");
                 });
             });
         });
-        (0, code_1.expect)(j('[]')).to.equal({ $: '<>' });
-        (0, code_1.expect)(j('[1]')).to.equal({ $: '<>', 0: '<1:0>' });
-        (0, code_1.expect)(j('[1,2]')).to.equal({ $: '<>', 0: '<1:0>', 1: '<2:1>' });
-        (0, code_1.expect)(j('[1,2,3]')).to.equal({ $: '<>', 0: '<1:0>', 1: '<2:1>', 2: '<3:2>' });
-        (0, code_1.expect)(j('[[]]')).to.equal({ $: '<>', 0: { $: '<0>' } });
-        (0, code_1.expect)(j('[[1]]')).to.equal({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>' } });
-        (0, code_1.expect)(j('[[1,2]]'))
-            .to.equal({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>' } });
-        (0, code_1.expect)(j('[[1,2,3]]'))
-            .to.equal({ $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>', 2: '<3:0,2>' } });
-        (0, code_1.expect)(j('[[[]]]')).to.equal({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>' } } });
-        (0, code_1.expect)(j('[[[1]]]'))
-            .to.equal({ $: '<>', 0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>' } } });
-        (0, code_1.expect)(j('[[[1,2]]]'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('[]'), { $: '<>' });
+        node_assert_1.default.deepEqual(j('[1]'), { $: '<>', 0: '<1:0>' });
+        node_assert_1.default.deepEqual(j('[1,2]'), { $: '<>', 0: '<1:0>', 1: '<2:1>' });
+        node_assert_1.default.deepEqual(j('[1,2,3]'), { $: '<>', 0: '<1:0>', 1: '<2:1>', 2: '<3:2>' });
+        node_assert_1.default.deepEqual(j('[[]]'), { $: '<>', 0: { $: '<0>' } });
+        node_assert_1.default.deepEqual(j('[[1]]'), { $: '<>', 0: { $: '<0>', 0: '<1:0,0>' } });
+        node_assert_1.default.deepEqual(j('[[1,2]]'), { $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>' } });
+        node_assert_1.default.deepEqual(j('[[1,2,3]]'), { $: '<>', 0: { $: '<0>', 0: '<1:0,0>', 1: '<2:0,1>', 2: '<3:0,2>' } });
+        node_assert_1.default.deepEqual(j('[[[]]]'), { $: '<>', 0: { $: '<0>', 0: { $: '<0,0>' } } });
+        node_assert_1.default.deepEqual(j('[[[1]]]'), { $: '<>', 0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>' } } });
+        node_assert_1.default.deepEqual(j('[[[1,2]]]'), {
             $: '<>',
             0: { $: '<0>', 0: { $: '<0,0>', 0: '<1:0,0,0>', 1: '<2:0,0,1>' } }
         });
-        (0, code_1.expect)(j('[[[1,2,3]]]'))
-            .to.equal({
+        node_assert_1.default.deepEqual(j('[[[1,2,3]]]'), {
             $: '<>',
             0: {
                 $: '<0>',
@@ -203,7 +228,7 @@ const path_1 = require("../dist/path");
                 });
             });
         });
-        (0, code_1.expect)(j('{a:{b:1}}')).to.equal({
+        node_assert_1.default.deepEqual(j('{a:{b:1}}'), {
             k: undefined,
             o: 'obj',
             p: [],
@@ -223,7 +248,7 @@ const path_1 = require("../dist/path");
                 },
             },
         });
-        (0, code_1.expect)(j('{a:{b:1,c:{d:{e:2}}},f:4}')).to.equal({
+        node_assert_1.default.deepEqual(j('{a:{b:1,c:{d:{e:2}}},f:4}'), {
             k: undefined,
             o: 'obj',
             p: [],
@@ -269,7 +294,7 @@ const path_1 = require("../dist/path");
                 },
             },
         });
-        (0, code_1.expect)(j('[a,b,c]')).to.equal({
+        node_assert_1.default.deepEqual(j('[a,b,c]'), {
             k: undefined,
             o: 'arr',
             p: [],
@@ -294,7 +319,7 @@ const path_1 = require("../dist/path");
                 },
             }
         });
-        (0, code_1.expect)(j('[a,[b],{c:1,d:[2,3]}]')).to.equal({
+        node_assert_1.default.deepEqual(j('[a,[b],{c:1,d:[2,3]}]'), {
             k: undefined,
             o: 'arr',
             p: [],
@@ -369,23 +394,17 @@ const path_1 = require("../dist/path");
                 }
             });
         });
-        (0, code_1.expect)(j('a:AAA')).to.equal({ a: { AAA: 1, k: 'a', p: ['a'] } });
+        node_assert_1.default.deepEqual(j('a:AAA'), { a: { AAA: 1, k: 'a', p: ['a'] } });
     });
     (0, node_test_1.test)('expr', () => {
         const j = jsonic_1.Jsonic.make()
             .use(path_1.Path)
-            .use(expr_1.Expr, {
-            op: {
-                'foo': {
-                    infix: true, src: '%', left: 14000, right: 15000
-                },
-            },
-            evaluate: (r, _c, _op, terms) => {
-                return { foo: terms[0] * terms[1], k: r.k.key, p: r.k.path };
-            }
-        });
-        (0, code_1.expect)(j('{a:2%3}')).to.equal({ a: { foo: 6, k: 'a', p: ['a'] } });
-        (0, code_1.expect)(j('a:2%3')).to.equal({ a: { foo: 6, k: 'a', p: ['a'] } });
+            .use(ExprLite);
+        node_assert_1.default.deepEqual(j('{a:2+3*4}'), { a: { expr: 14, k: 'a', p: ['a'] } });
+        node_assert_1.default.deepEqual(j('a:2+3*4'), { a: { expr: 14, k: 'a', p: ['a'] } });
+        node_assert_1.default.deepEqual(j('a:2*3+4'), { a: { expr: 10, k: 'a', p: ['a'] } });
+        node_assert_1.default.deepEqual(j('a:2+3'), { a: { expr: 5, k: 'a', p: ['a'] } });
+        node_assert_1.default.deepEqual(j('a:2*3'), { a: { expr: 6, k: 'a', p: ['a'] } });
     });
 });
 //# sourceMappingURL=path.test.js.map

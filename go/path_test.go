@@ -20,7 +20,7 @@ func assert(t *testing.T, name string, got, want any) {
 
 // addPathCapture adds a val AC callback that annotates nodes with path info.
 func addPathCapture(j *jsonic.Jsonic) {
-	j.Rule("val", func(rs *jsonic.RuleSpec) {
+	j.Rule("val", func(rs *jsonic.RuleSpec, p *jsonic.Parser) {
 		rs.AC = append(rs.AC, func(r *jsonic.Rule, ctx *jsonic.Context) {
 			path := toPathSlice(r.K["path"])
 			switch node := r.Node.(type) {
@@ -68,7 +68,7 @@ func TestMetaBasePath(t *testing.T) {
 	j := jsonic.Make()
 	j.Use(Path, nil)
 
-	j.Rule("val", func(rs *jsonic.RuleSpec) {
+	j.Rule("val", func(rs *jsonic.RuleSpec, p *jsonic.Parser) {
 		rs.AC = append(rs.AC, func(r *jsonic.Rule, ctx *jsonic.Context) {
 			path := toPathSlice(r.K["path"])
 			if node, ok := r.Node.(map[string]any); ok {
