@@ -1,6 +1,6 @@
 {
   "name": "@jsonic/path",
-  "version": "1.5.1",
+  "version": "2.0.0",
   "description": "This plugin allows the [Jsonic](https://jsonic.senecajs.org) JSON parser to determine the path to values.",
   "main": "dist/path.js",
   "type": "commonjs",
