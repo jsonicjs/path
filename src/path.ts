@@ -22,6 +22,20 @@ const grammarText = `
 `
 // --- END EMBEDDED path-grammar.jsonic ---
 
+// Preallocated array pool for path tracking. Each depth level gets
+// a reusable array of that length. The arrays are mutated in place
+// as the parser traverses the tree — no allocation per pair/elem.
+//
+// IMPORTANT: r.k.path is a mutable, shared array. Client code that
+// needs to retain the path beyond the current parse callback MUST
+// copy it (e.g. r.k.path.slice() or [...r.k.path]).
+const MAX_PATH_DEPTH = 64
+const pathPool: any[][] = []
+for (let i = 0; i <= MAX_PATH_DEPTH; i++) {
+  pathPool[i] = new Array(i)
+}
+
+
 /* Keeps track of the property path to the current location.
  * Example: {a:{b:1 ## path=["a","b"]
  * Use the Rule.k key-value store so that the path is propagated to children and followers.
@@ -32,18 +46,35 @@ const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
     '@val-bo': (r: Rule, ctx: Context) => {
       // At top level, create path array, or inherit from meta context.
       if (0 === r.d) {
-        r.k.path = ctx.meta.path?.base?.slice(0) || []
+        const base = ctx.meta.path?.base
+        if (base && base.length > 0) {
+          const arr = pathPool[base.length] || new Array(base.length)
+          for (let i = 0; i < base.length; i++) arr[i] = base[i]
+          r.k.path = arr
+          r.k.pathDepth = base.length
+        }
+        else {
+          r.k.path = pathPool[0]
+          r.k.pathDepth = 0
+        }
       }
     },
 
     '@map-bo': (r: Rule) => {
       // Not in an array, so no need to track element index.
-      delete r.k.index
+      r.k.index = undefined
     },
 
     '@pair-ao': (r: Rule) => {
       if (0 < r.d && r.u.pair) {
-        r.child.k.path = [...r.k.path, r.u.key]
+        const depth = (r.k.pathDepth || 0) + 1
+        const arr = pathPool[depth] || (pathPool[depth] = new Array(depth))
+        const parent = r.k.path
+        const parentLen = depth - 1
+        for (let i = 0; i < parentLen; i++) arr[i] = parent[i]
+        arr[parentLen] = r.u.key
+        r.child.k.path = arr
+        r.child.k.pathDepth = depth
         r.child.k.key = r.u.key
       }
     },
@@ -56,7 +87,14 @@ const Path: Plugin = (jsonic: Jsonic, _options: PathOptions) => {
     '@elem-ao': (r: Rule) => {
       if (0 < r.d) {
         r.k.index = 1 + r.k.index
-        r.child.k.path = [...r.k.path, r.k.index]
+        const depth = (r.k.pathDepth || 0) + 1
+        const arr = pathPool[depth] || (pathPool[depth] = new Array(depth))
+        const parent = r.k.path
+        const parentLen = depth - 1
+        for (let i = 0; i < parentLen; i++) arr[i] = parent[i]
+        arr[parentLen] = r.k.index
+        r.child.k.path = arr
+        r.child.k.pathDepth = depth
         r.child.k.key = r.k.index
         r.child.k.index = r.k.index
       }

@@ -41,7 +41,8 @@ const ExprLite = (jsonic) => {
     jsonic.rule('val', rs => {
         rs.ac(false, (r) => {
             if (r.node && typeof r.node === 'object' && r.node[EXPR_MARK]) {
-                r.node = { expr: evalExpr(r.node.src), k: r.k.key, p: r.k.path };
+                // NOTE: path must be copied — it is a mutable shared array
+                r.node = { expr: evalExpr(r.node.src), k: r.k.key, p: r.k.path.slice() };
             }
         });
     });
@@ -57,6 +58,7 @@ const ExprLite = (jsonic) => {
                 rs
                     .ac(false, (r) => {
                     if ('object' !== typeof (r.node)) {
+                        // String coercion reads path immediately — safe
                         r.node = `<${r.node}:${r.k.path}>`;
                     }
                     else {
@@ -133,8 +135,7 @@ const ExprLite = (jsonic) => {
         });
         node_assert_1.default.deepEqual(j('y:x:{a:1}'), { $: '<>', y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>' } } });
         node_assert_1.default.deepEqual(j('y:x:{a:1,b:B}'), {
-            $: '<>',
-            y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>', b: '<B:y,x,b>' } }
+            $: '<>', y: { $: '<y>', x: { $: '<y,x>', a: '<1:y,x,a>', b: '<B:y,x,b>' } }
         });
         node_assert_1.default.deepEqual(j('y:x:{a:1,b:B,c:true}'), {
             $: '<>', y: {
@@ -213,7 +214,8 @@ const ExprLite = (jsonic) => {
                         r.node = {
                             o: 'val',
                             v: r.node,
-                            p: r.k.path,
+                            // NOTE: path must be copied — it is a mutable shared array
+                            p: r.k.path.slice(),
                             k: r.k.key,
                         };
                     }
@@ -221,7 +223,7 @@ const ExprLite = (jsonic) => {
                         r.node = {
                             o: Array.isArray(r.node) ? 'arr' : 'obj',
                             v: { ...r.node },
-                            p: r.k.path,
+                            p: r.k.path.slice(),
                             k: r.k.key,
                         };
                     }
@@ -387,7 +389,8 @@ const ExprLite = (jsonic) => {
                     def: {
                         AAA: {
                             val: (r) => {
-                                return { AAA: 1, k: r.k.key, p: r.k.path };
+                                // NOTE: path must be copied
+                                return { AAA: 1, k: r.k.key, p: r.k.path.slice() };
                             }
                         }
                     }
@@ -405,6 +408,36 @@ const ExprLite = (jsonic) => {
         node_assert_1.default.deepEqual(j('a:2*3+4'), { a: { expr: 10, k: 'a', p: ['a'] } });
         node_assert_1.default.deepEqual(j('a:2+3'), { a: { expr: 5, k: 'a', p: ['a'] } });
         node_assert_1.default.deepEqual(j('a:2*3'), { a: { expr: 6, k: 'a', p: ['a'] } });
+    });
+    (0, node_test_1.test)('path-is-mutable', () => {
+        // Verify that r.k.path is a shared mutable array.
+        // Client code that needs to retain it must copy.
+        const captured = [];
+        const j = jsonic_1.Jsonic.make().use(path_1.Path).use((jsonic) => {
+            jsonic.rule('val', rs => {
+                rs.ac(false, (r) => {
+                    if ('object' !== typeof r.node) {
+                        // Store both a live ref and a snapshot
+                        captured.push({
+                            live: r.k.path,
+                            snapshot: r.k.path.slice(),
+                            value: r.node,
+                        });
+                    }
+                });
+            });
+        });
+        j('{a:1,b:2,c:{d:3}}');
+        // Snapshots should have correct values at capture time
+        const snaps = captured.map(c => ({ v: c.value, p: c.snapshot }));
+        node_assert_1.default.deepEqual(snaps, [
+            { v: 1, p: ['a'] },
+            { v: 2, p: ['b'] },
+            { v: 3, p: ['c', 'd'] },
+        ]);
+        // Live refs at same depth share the same array instance
+        // (a and b are both depth 1)
+        node_assert_1.default.strictEqual(captured[0].live, captured[1].live);
     });
 });
 //# sourceMappingURL=path.test.js.map
